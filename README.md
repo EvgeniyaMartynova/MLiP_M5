@@ -3,7 +3,7 @@
 ### Useful links and information:
 
 #### Accuracy challenge
-**The materials from bright space:**
+**The materials from Brightspace:**
 - Online book about timeseries forecasting https://otexts.com/fpp2/what-can-be-forecast.html
 - Methods for Intermittent Demand Forecasting https://www.lancaster.ac.uk/pg/waller/pdfs/Intermittent_Demand_Forecasting.pdf
 - Mathematical background of scoring rules https://www.stat.washington.edu/raftery/Research/PDF/Gneiting2007jasa.pdf
