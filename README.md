@@ -1,8 +1,8 @@
 # MLiP_M5
 
-### Useful links and information:
+## Useful links and information:
 
-#### Accuracy challenge
+### Accuracy challenge
 **The materials from Brightspace:**
 - Online book about timeseries forecasting https://otexts.com/fpp2/what-can-be-forecast.html
 - Methods for Intermittent Demand Forecasting https://www.lancaster.ac.uk/pg/waller/pdfs/Intermittent_Demand_Forecasting.pdf
@@ -23,9 +23,11 @@
 - Extensive EDA in R https://www.kaggle.com/headsortails/back-to-predict-the-future-interactive-m5-eda
 
 **Kaggle discussions:**
-To be added
+- A lot of tips: https://www.kaggle.com/c/m5-forecasting-accuracy/discussion/144067
+- Practical NNs notes: https://www.kaggle.com/c/m5-forecasting-accuracy/discussion/144023
+- M4 winner: https://www.kaggle.com/c/m5-forecasting-accuracy/discussion/133551
 
-#### Uncertaintly challenge
+### Uncertaintly challenge
 **The materials from bright space:**
 - Pinball loss function https://arxiv.org/pdf/1710.01720.pdf
 
