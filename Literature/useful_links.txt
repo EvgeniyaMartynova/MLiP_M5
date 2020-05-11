@@ -1,0 +1,20 @@
+https://github.com/waylongo/predict-future-sale/blob/master/Readme.md
+
+https://machinelearningmastery.com/time-series-forecast-study-python-monthly-sales-french-champagne/
+
+
+Uncertainty
+
+Nice article to start with. 
+https://towardsdatascience.com/estimating-uncertainty-in-machine-learning-models-part-1-99fde3b0cbc1
+I see the discussion section of the competition could be really helpful to understand the problem. Like following threads seems interesting to start with. 
+https://www.kaggle.com/c/m5-forecasting-uncertainty/discussion/133613. Please go through the whole thread including discussion
+https://www.kaggle.com/c/m5-forecasting-uncertainty/discussion/133692
+Suggested in one of the comments. 
+https://www.sciencedirect.com/science/article/pii/S0169207019301153
+https://github.com/Mcompetitions/M4-methods. 
+Understanding the uncertainty in weather/ meteorological forecasting would be worthy enough for this problem
+http://urban-computing.com/pdf/kdd19-BinWang.pdf
+https://www.researchgate.net/publication/328264084_Predicting_Weather_Forecast_Uncertainty_with_Machine_Learning.
+May be of your interest at some point. https://www.kaggle.com/fernandol/cracking-the-walmart-sales-forecasting-challenge
+
