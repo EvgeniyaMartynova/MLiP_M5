@@ -151,7 +151,8 @@ scores = pd.DataFrame(np.zeros((rows-1, 1)))
 
 
 #%%
-for productnr in range(2, 1000):
+#loop for training and prediction for each product (2,rows) for all products
+for productnr in range(2, rows-1):
     #productnr = 4
     product=data.iloc[productnr,5:datacolumns]
     columns = product.size
@@ -159,9 +160,6 @@ for productnr in range(2, 1000):
     
     product = product.set_index(pd.to_datetime(calendar.iloc[0:columns,0]))
     
-    
-    print('hoi'+str(productnr))
-
     train = product.iloc[0:columns-testsize]
     test = product.iloc[columns-testsize:columns]
     
@@ -169,7 +167,6 @@ for productnr in range(2, 1000):
     #print(scores.iloc[productnr])
     
 print('Mean RSME: '+str(scores.mean(axis=0)))
-
 
 #%%
 rows,columns = data.shape
@@ -180,3 +177,6 @@ product = product.to_frame()
 product = product.set_index(pd.to_datetime(calendar.iloc[0:columns,0]))
 
 plt.plot(product)
+
+#%%
+scores.mean(axis=0)
