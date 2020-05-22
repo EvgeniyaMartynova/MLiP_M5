@@ -9,15 +9,8 @@ Created on Mon Apr 27 15:09:56 2020
 import numpy as np # linear algebra
 import matplotlib.pyplot as plt
 import xgboost as xgb
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-import imageio
-from statsmodels.graphics.tsaplots import plot_acf
-import datetime
-
-
 import sys, os
 import pandas as pd
-
 from contextlib import contextmanager
 
 
@@ -160,10 +153,11 @@ scores = pd.DataFrame(np.zeros((rows-1, 1)))
 
 
 #%%
-#loop for training and prediction for each product (0,rows-1) for all products
-for productnr in range(0, rows-1):
+#loop for training and prediction for each product (0,rows) for all products
+#changed to row from row-1, python range has [,) interval
+for productnr in range(0, rows):
     #productnr = 4
-    product=data.iloc[productnr,5:datacolumns]
+    product=data.iloc[productnr,6:datacolumns]
     p1=pd.DataFrame(np.zeros((28,1)))
     p2=pd.DataFrame(np.zeros((28,1)))
     columns = product.size
@@ -171,7 +165,7 @@ for productnr in range(0, rows-1):
     
     product = product.set_index(pd.to_datetime(calendar.iloc[0:columns,0]))
     p1 = p1.set_index(pd.to_datetime(calendar.iloc[columns:columns+testsize,0]))
-    p2 = p2.set_index(pd.to_datetime(calendar.iloc[columns+testsize:calendar.shape[0],0]))
+    p2 = p2.set_index(pd.to_datetime(calendar.iloc[columns+testsize:calendar.shape[0]+1,0]))
 
     train = product.iloc[0:columns-testsize]
     test = product.iloc[columns-testsize:columns]
