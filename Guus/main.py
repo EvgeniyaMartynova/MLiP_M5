@@ -100,7 +100,8 @@ def do_predictions(productnr):
     
     X_train, y_train = create_features(train), train[productnr]
     X_test, y_test   = create_features(test), test[productnr]
-    
+    predictionfeatures1 = create_features(p1)
+    predictionfeatures2 = create_features(p2)
     X_train.shape, y_train.shape
     
 
@@ -120,6 +121,10 @@ def do_predictions(productnr):
         
     X_test_pred = reg.predict(X_test)
     print(str(productnr)+" : "+str(reg.best_score))   
+    pred1 = reg.predict(predictionfeatures1)
+    pred2 = reg.predict(predictionfeatures2)
+    #print(pred1)
+    
     #plot_performance(data, data.index[0].date(), data.index[-1].date(),
     #                 'Original and Predicted Data')
     
@@ -132,7 +137,7 @@ def do_predictions(productnr):
     
    # plt.show()
 
-    return X_test_pred, reg.best_score
+    return pred1,pred2, X_test_pred, reg.best_score
 
 #%%
 #This is kind of the main code I used to read in data and do predictions. sorry for the mess :)
@@ -145,38 +150,45 @@ calendar = pd.read_csv('calendar.csv')
 testsize=28 #days
 rows,datacolumns = data.shape
 #create empty dataframe for predictions
-predictions = pd.DataFrame(np.zeros((rows-1, testsize)))
+testpredictions = pd.DataFrame(np.zeros((rows, testsize)))
+prediction1 = pd.DataFrame(np.zeros((rows, 28)))
+prediction2 = pd.DataFrame(np.zeros((rows, 28)))
+finalprediction = pd.DataFrame(np.zeros(((rows)*2, 28)))
+
 #create dataframe for storing the RMSE score for each product
 scores = pd.DataFrame(np.zeros((rows-1, 1)))
 
 
 #%%
-#loop for training and prediction for each product (2,rows) for all products
-for productnr in range(2, rows-1):
+#loop for training and prediction for each product (0,rows-1) for all products
+for productnr in range(0, rows-1):
     #productnr = 4
     product=data.iloc[productnr,5:datacolumns]
+    p1=pd.DataFrame(np.zeros((28,1)))
+    p2=pd.DataFrame(np.zeros((28,1)))
     columns = product.size
     product = product.to_frame()
     
     product = product.set_index(pd.to_datetime(calendar.iloc[0:columns,0]))
-    
+    p1 = p1.set_index(pd.to_datetime(calendar.iloc[columns:columns+testsize,0]))
+    p2 = p2.set_index(pd.to_datetime(calendar.iloc[columns+testsize:calendar.shape[0],0]))
+
     train = product.iloc[0:columns-testsize]
     test = product.iloc[columns-testsize:columns]
     
-    predictions.iloc[productnr], scores.iloc[productnr]=do_predictions(productnr)
+    
+    prediction1.iloc[productnr], prediction2.iloc[productnr], testpredictions.iloc[productnr], scores.iloc[productnr]=do_predictions(productnr)
     #print(scores.iloc[productnr])
     
 print('Mean RSME: '+str(scores.mean(axis=0)))
+finalprediction = pd.concat([prediction1,prediction2], ignore_index=True)
+
 
 #%%
-rows,columns = data.shape
-product=data.iloc[380,5:columns]
-columns = product.size
-product = product.to_frame()
-
-product = product.set_index(pd.to_datetime(calendar.iloc[0:columns,0]))
-
-plt.plot(product)
-
+submission = pd.read_csv('sample_submission.csv')
+columnnames = submission.columns[1:29]
+finalprediction.set_axis(columnnames,axis=1, inplace=True)
+submission.update(finalprediction)
+submission.to_csv('submission.csv')
 #%%
-scores.mean(axis=0)
+ #finalprediction = finalprediction.rename(columns={"0": "F1", "1": "F2","2": "F3","3": "F4","4": "F5","5": "F6","6": "F7","7": "F8","8": "F9","9": "F10","10": "F11","11": "F12","12": "F13","13": "F14","14": "F15","15": "F16","16": "F17","17": "F18","18": "F19","19": "F20","20": "F21","21": "F22","22": "F23","23": "F24","24": "F25","25": "F26","26": "F27","27": "F28"})
