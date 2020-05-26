@@ -49,15 +49,23 @@ print(path)
 # =============================================================================
 
 #%%
-#This is where the features are created, I think we can leave out hour
+#This is where the features are created
+def create_features(df,productnr):
+    # add lag vectors
+    lags = [7, 28]
+    lag_cols = [f"lag_{lag}" for lag in lags]
+    for lag, lag_col in zip(lags, lag_cols):
+        df[lag_col] = df.loc[:,productnr].shift(lag).astype("float32")
 
-
-def create_features(df):
     """
-    Creates time series features from datetime index
+    # rolling features on lag_cols
+    wins = [7, 28]
+    for win in wins :
+        for lag,lag_col in zip(lags, lag_cols):
+            df[f"rmean_{lag}_{win}"] = df[["productnr", lag_col]].groupby("productnr")[lag_col].transform(lambda x : x.rolling(win).mean())
     """
-    df['date'] = df.index
-    df['hour'] = df['date'].dt.hour
+    # time features
+    df['date'] = pd.to_datetime(df.index)
     df['dayofweek'] = df['date'].dt.dayofweek
     df['quarter'] = df['date'].dt.quarter
     df['month'] = df['date'].dt.month
@@ -66,8 +74,8 @@ def create_features(df):
     df['dayofmonth'] = df['date'].dt.day
     df['weekofyear'] = df['date'].dt.weekofyear
     
-    X = df[['hour','dayofweek','quarter','month','year',
-           'dayofyear','dayofmonth','weekofyear']]
+    X = df[['dayofweek','quarter','month','year','dayofyear','dayofmonth','weekofyear',
+            'lag_7', 'lag_28']]#, 'rmean_7_7', 'rmean_7_28', 'rmean_7_28', 'rmean_28_28']]
     return X
 #%%
 #This is the plotting functions that creates the nice plots of your 
@@ -90,33 +98,24 @@ def plot_performance(base_data, date_from, date_to, title=None):
 #%%
 #This is where the model is created and predictions are made
 def do_predictions(productnr):
+    X_train, y_train = create_features(train,productnr), train[productnr]
+    X_test, y_test   = create_features(test,productnr), test[productnr]
     
-    X_train, y_train = create_features(train), train[productnr]
-    X_test, y_test   = create_features(test), test[productnr]
-    predictionfeatures1 = create_features(p1)
-    predictionfeatures2 = create_features(p2)
-    X_train.shape, y_train.shape
-    
-
-
-
     reg = xgb.XGBRegressor(n_estimators=1000)
     reg.fit(X_train, y_train,
             eval_set=[(X_train, y_train), (X_test, y_test)],
             early_stopping_rounds=50, #stop if 50 consequent rounds without decrease of error
             verbose=False) # Change verbose to True if you want to see it train
 
-
     #xgb.plot_importance(reg, height=0.9)
     
-    
-    
-        
     X_test_pred = reg.predict(X_test)
-    print(str(productnr)+" : "+str(reg.best_score))   
+    print(str(productnr)+" : "+str(reg.best_score))
+    
+    predictionfeatures1 = create_features(p1,productnr)
+    predictionfeatures2 = create_features(p2,productnr)
     pred1 = reg.predict(predictionfeatures1)
     pred2 = reg.predict(predictionfeatures2)
-    #print(pred1)
     
     #plot_performance(data, data.index[0].date(), data.index[-1].date(),
     #                 'Original and Predicted Data')
@@ -137,9 +136,12 @@ def do_predictions(productnr):
 #base = datetime.datetime.today()
 #date_list = [base - datetime.timedelta(days=x) for x in range(numdays)]
 
-data = pd.read_csv('sales_train_validation.csv')
+#numcols can be modified to use less days
+numcols = [f"d_{day}" for day in range(1,1914)]
+catcols = ['id', 'item_id', 'dept_id','store_id', 'cat_id', 'state_id']
+dtype = {numcol:"float32" for numcol in numcols} 
+data = pd.read_csv('sales_train_validation.csv',usecols = catcols + numcols, dtype = dtype)
 calendar = pd.read_csv('calendar.csv')
-#testdata = pd.read_csv('sales_test_validation.csv')
 testsize=28 #days
 rows,datacolumns = data.shape
 #create empty dataframe for predictions
@@ -170,13 +172,11 @@ for productnr in range(0, rows):
     train = product.iloc[0:columns-testsize]
     test = product.iloc[columns-testsize:columns]
     
-    
+    #why do you add testpredictions? it seems like it's not used
     prediction1.iloc[productnr], prediction2.iloc[productnr], testpredictions.iloc[productnr], scores.iloc[productnr]=do_predictions(productnr)
-    #print(scores.iloc[productnr])
     
 print('Mean RSME: '+str(scores.mean(axis=0)))
 finalprediction = pd.concat([prediction1,prediction2], ignore_index=True)
-
 
 #%%
 submission = pd.read_csv('sample_submission.csv')
