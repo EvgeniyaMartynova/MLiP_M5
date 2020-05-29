@@ -52,11 +52,34 @@ print(path)
 #This is where the features are created
 def create_features(df,productnr):
     # add lag vectors
-    lags = [7, 28]
-    lag_cols = [f"lag_{lag}" for lag in lags]
-    for lag, lag_col in zip(lags, lag_cols):
-        df[lag_col] = df.loc[:,productnr].shift(lag).astype("float32")
-
+    #lags = [7, 28]
+    #lag_cols = [f"lag_{lag}" for lag in lags]
+   # for lag, lag_col in zip(lags, lag_cols):
+    #    df[lag_col] = df.loc[:,productnr].shift(lag).astype("float32")
+    lags =[7,28]
+    for lag in lags:
+        #placeholder storing sales to be shifted
+        shift=product
+        #copy date-indices
+        index=pd.date_range(start=calendar.iloc[product.shape[0],0], end= calendar.iloc[calendar.shape[0]-1,0])
+        #get correct columname because pandas sucks and doesnt correctly append even if you give the exact location because "columnames" are more important than that
+        columns=[productnr]
+        #extend the df so we don't lose date when we shift
+        empty = pd.DataFrame(index=index, columns=columns)
+        shift = shift.append(empty, ignore_index=False)
+        #shift with the specified lag
+        laggedsales=shift.shift(lag)
+        #get the relevant shifted sales
+        startdate=df.index[0]
+        startindex=shift.index.get_loc(startdate)
+        enddate=df.index[df.shape[0]-1]
+        endindex=shift.index.get_loc(enddate)+1
+        #make new feature
+        colname='lag_'+ str(lag)
+        df[colname]=laggedsales.iloc[startindex:endindex,0]
+        del shift
+    
+    
     """
     # rolling features on lag_cols
     wins = [7, 28]
@@ -73,9 +96,13 @@ def create_features(df,productnr):
     df['dayofyear'] = df['date'].dt.dayofyear
     df['dayofmonth'] = df['date'].dt.day
     df['weekofyear'] = df['date'].dt.weekofyear
+
+    df=df.drop(['date'], axis=1)
+    X = df[['dayofweek','month', 'year','dayofyear','dayofmonth','weekofyear','lag_7','lag_28']]#,
+    #X = df[['dayofweek','quarter','month', 'year','dayofyear','dayofmonth','weekofyear','lag_7','lag_28']]#,
     
-    X = df[['dayofweek','quarter','month','year','dayofyear','dayofmonth','weekofyear',
-            'lag_7', 'lag_28']]#, 'rmean_7_7', 'rmean_7_28', 'rmean_7_28', 'rmean_28_28']]
+    X=X.fillna(0)
+            #'lag_7', 'lag_28']]#, 'rmean_7_7', 'rmean_7_28', 'rmean_7_28', 'rmean_28_28']]
     return X
 #%%
 #This is the plotting functions that creates the nice plots of your 
@@ -89,8 +116,8 @@ def plot_performance(base_data, date_from, date_to, title=None):
         plt.title(title)
     plt.xlabel('time')
     plt.ylabel('sales')
-    plt.plot(data.index,data, label='data')
-    plt.plot(X_test.index,X_test_pred, label='prediction')
+    #plt.plot(base_data.index,product, label='data')
+    plt.plot(base_data.index,X_test_pred, label='prediction')
     plt.legend()
     plt.xlim(left=date_from, right=date_to)
     return
@@ -101,10 +128,10 @@ def do_predictions(productnr):
     X_train, y_train = create_features(train,productnr), train[productnr]
     X_test, y_test   = create_features(test,productnr), test[productnr]
     
-    reg = xgb.XGBRegressor(n_estimators=1000)
+    reg = xgb.XGBRegressor(n_estimators=100)
     reg.fit(X_train, y_train,
             eval_set=[(X_train, y_train), (X_test, y_test)],
-            early_stopping_rounds=50, #stop if 50 consequent rounds without decrease of error
+            early_stopping_rounds=10, #stop if 50 consequent rounds without decrease of error
             verbose=False) # Change verbose to True if you want to see it train
 
     #xgb.plot_importance(reg, height=0.9)
@@ -116,18 +143,24 @@ def do_predictions(productnr):
     predictionfeatures2 = create_features(p2,productnr)
     pred1 = reg.predict(predictionfeatures1)
     pred2 = reg.predict(predictionfeatures2)
+    plt.figure(figsize=(15,3))
+    plt.plot(y_test.index, y_test, label='data')
+    plt.plot(y_test.index, X_test_pred, label='test')
+    plt.show()
     
-    #plot_performance(data, data.index[0].date(), data.index[-1].date(),
-    #                 'Original and Predicted Data')
+   # plot_performance(product, product.index[0].date(), product.index[-1].date(),
+   #                  'Original and Predicted Data')
+
+# =============================================================================
+#     plot_performance(X_test_pred, y_test.index[0].date(), y_test.index[-1].date(),
+#                      'Test and Predicted Data')
+#     
+#     plot_performance(y_test, '01-01-2016', '24-04-2016', 'Prediction')
+# =============================================================================
     
-   # plot_performance(y_test, y_test.index[0].date(), y_test.index[-1].date(),
-    #                 'Test and Predicted Data')
+   # plt.legend()
     
-    #plot_performance(y_test, '01-01-2016', '24-04-2016', 'Prediction')
     
-    #plt.legend()
-    
-   # plt.show()
 
     return pred1,pred2, X_test_pred, reg.best_score
 
@@ -151,13 +184,13 @@ prediction2 = pd.DataFrame(np.zeros((rows, 28)))
 finalprediction = pd.DataFrame(np.zeros(((rows)*2, 28)))
 
 #create dataframe for storing the RMSE score for each product
-scores = pd.DataFrame(np.zeros((rows-1, 1)))
+scores = pd.DataFrame(np.zeros((rows, 1)))
 
 
 #%%
 #loop for training and prediction for each product (0,rows) for all products
 #changed to row from row-1, python range has [,) interval
-for productnr in range(0, rows):
+for productnr in range(rows-1001 ,rows):
     #productnr = 4
     product=data.iloc[productnr,6:datacolumns]
     p1=pd.DataFrame(np.zeros((28,1)))
@@ -169,7 +202,7 @@ for productnr in range(0, rows):
     p1 = p1.set_index(pd.to_datetime(calendar.iloc[columns:columns+testsize,0]))
     p2 = p2.set_index(pd.to_datetime(calendar.iloc[columns+testsize:calendar.shape[0]+1,0]))
 
-    train = product.iloc[0:columns-testsize]
+    train = product.iloc[0+28:columns-testsize]
     test = product.iloc[columns-testsize:columns]
     
     #why do you add testpredictions? it seems like it's not used
@@ -177,12 +210,18 @@ for productnr in range(0, rows):
     
 print('Mean RSME: '+str(scores.mean(axis=0)))
 finalprediction = pd.concat([prediction1,prediction2], ignore_index=True)
+# =============================================================================
+# last=prediction2.iloc[30489,:]
+# for i in range(0,27):
+#     finalprediction.iloc[60979,i]=last.iloc[i]
+# =============================================================================
+    
 
 #%%
 submission = pd.read_csv('sample_submission.csv')
 columnnames = submission.columns[1:29]
 finalprediction.set_axis(columnnames,axis=1, inplace=True)
 submission.update(finalprediction)
-submission.to_csv('submission.csv')
+submission.to_csv('submission.csv', index=False)
 #%%
  #finalprediction = finalprediction.rename(columns={"0": "F1", "1": "F2","2": "F3","3": "F4","4": "F5","5": "F6","6": "F7","7": "F8","8": "F9","9": "F10","10": "F11","11": "F12","12": "F13","13": "F14","14": "F15","15": "F16","16": "F17","17": "F18","18": "F19","19": "F20","20": "F21","21": "F22","22": "F23","23": "F24","24": "F25","25": "F26","26": "F27","27": "F28"})

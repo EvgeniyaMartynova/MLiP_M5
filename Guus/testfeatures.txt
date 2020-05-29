@@ -1,0 +1,13 @@
+rows-1001,rows
+
+dayofwe	quarter	month	year	dayofye	dayofmo	weekofy	lag_7	lag_28	score
+x	x	x			x		x	x	0.058856
+x		x			x			x	0.061584	
+x	x	x			x			x	0.061596
+x	x	x	x	x	x	x	x	x	0.057079 
+x	x	x	x	x	x	x	x	x	0.057162 (+lag_365)
+x	x	x		x	x	x	x	x	0.058822
+x		x	x	x	x	x	x	x	0.057074 (best)
+x		x	x	x	x	x			0.058177
+x		x	x	x	x	x	x	x	0.057247(+lag_14)
+									0.056901(dropped first month due to NaN/0 in lagfeatures)
