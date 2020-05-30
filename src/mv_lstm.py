@@ -32,12 +32,12 @@ class MV_LSTM(nn.Module):
     def forward(self, x):
         batch_size, seq_len, _ = x.size()
 
-        lstm_out, self.hidden = self.l_lstm(x,self.hidden)
+        lstm_out, self.hidden = self.l_lstm(x, self.hidden)
         # lstm_out(with batch_first = True) is
         # (batch_size,seq_len,num_directions * hidden_size)
         # for following linear layer we want to keep batch_size dimension and merge rest
         # .contiguous() -> solves tensor compatibility error
         linear_input = lstm_out.contiguous().view(batch_size,-1)
         output = self.l_linear(linear_input)
-        output = self.dropout(output)
+        #output = self.dropout(output)
         return output

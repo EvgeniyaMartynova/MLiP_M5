@@ -83,10 +83,10 @@ def data_subset(sales_df, category, store):
     columns = [c for c in sales_df.columns if category in c and store in c]
     return sales_df[columns]
 
-def train_subset(data):
+def train_subset(data, num_days_included=365):
     all_data = np.array(data)
     # Now we take last yer (365 days)
-    data_subset = all_data[1548:, :]
+    data_subset = all_data[-num_days_included:, :]
     return data_subset
 
 
@@ -121,22 +121,16 @@ def split_sequences(sequences, n_steps):
     return np.array(X), np.array(y)
 
 # set validation_size > 0 only for model tuning and not for submission prediction
-def train_test_split(x, y, validation_size=0):
+def train_test_split(dataset, validation_size=0, window=28):
     #use last 28 days as validation
     if validation_size > 0:
-        train_size = len(x[:,0,0]) - validation_size
+        train_size = len(dataset[:,0]) - (validation_size + window)
 
-        trainX = torch.from_numpy(x[:train_size]).float()
-        trainY = torch.from_numpy(y[:train_size]).float()
-
-        valX = torch.from_numpy(x[train_size:]).float()
-        valY = torch.from_numpy(y[train_size:]).float()
+        train = dataset[:train_size]
+        val = dataset[train_size:]
+        return train, val
     else:
-        trainX = torch.from_numpy(x).float()
-        trainY = torch.from_numpy(y).float()
-
-        valX, valY = None, None
-    return trainX, trainY, valX, valY
+        return dataset, None
 
 
 def plot_random_prediction(df_predict, df_labels=None):
@@ -175,3 +169,29 @@ def create_submission(df_validation, df_evaluation, df_sales_grouped, category, 
     df_evaluation = df_evaluation.set_index([index])
     dfe_transposed = df_evaluation.T
     dfe_transposed.to_csv(r'{}_{}_evaluation.csv'.format(category, store))
+
+
+def main():
+    # Demonstration of data generation
+    # define input sequence
+    in_seq1 = np.array([x for x in range(0, 100, 10)])
+    in_seq2 = np.array([x for x in range(5, 105, 10)])
+    in_seq3 = np.array([x for x in range(10, 110, 10)])
+    out_seq = np.array([in_seq1[i] + in_seq2[i] for i in range(len(in_seq1))])
+    # convert to [rows, columns] structure
+    in_seq1 = in_seq1.reshape((len(in_seq1), 1))
+    in_seq2 = in_seq2.reshape((len(in_seq2), 1))
+    in_seq3 = in_seq3.reshape((len(in_seq3), 1))
+    out_seq = out_seq.reshape((len(out_seq), 1))
+    # horizontally stack columns
+    dataset = np.hstack((in_seq1, in_seq2, in_seq3, out_seq))
+    print(dataset)
+
+    t, v = train_test_split(dataset, 4, window=3)
+    print(t)
+    print(v)
+
+
+
+if __name__ == '__main__':
+    main()

@@ -1,4 +1,4 @@
-from torch.utils.data import DataLoader, Dataset, IterableDataset
+from torch.utils.data import DataLoader, Dataset
 from itertools import islice
 import numpy as np
 import torch

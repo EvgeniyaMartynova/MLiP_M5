@@ -10,7 +10,7 @@ from sklearn.preprocessing import MinMaxScaler
 def train(data_loader_train, input_size, num_classes, seq_len, data_loader_val=None, num_epochs=100, device="cpu"):
     learning_rate = 1e-3
     hidden_size = 256
-    num_layers = 2
+    num_layers = 1
 
     lstm = MV_LSTM(input_size=input_size,
                    seq_length=seq_len,
@@ -30,13 +30,13 @@ def train(data_loader_train, input_size, num_classes, seq_len, data_loader_val=N
         # idea - created iterative data generator instead?
         lstm.train()
         for x_batch, y_batch in data_loader_train:
-            optimizer.zero_grad()
+            lstm.zero_grad()
             lstm.init_hidden(x_batch.size(0))
 
             output = lstm(x_batch.to(device))
             # print(output.shape)
             # print(y_batch.shape)
-            loss = criterion(output.view(-1), y_batch.to(device))
+            loss = criterion(output, y_batch.to(device))
             loss.backward()
 
             optimizer.step()
@@ -67,9 +67,9 @@ def train(data_loader_train, input_size, num_classes, seq_len, data_loader_val=N
 def main():
     # Demonstration of data generation
     # define input sequence
-    in_seq1 = np.array([x for x in range(0, 300, 10)])
-    in_seq2 = np.array([x for x in range(5, 305, 10)])
-    in_seq3 = np.array([x for x in range(10, 310, 10)])
+    in_seq1 = np.array([x for x in range(0, 1000, 10)])
+    in_seq2 = np.array([x for x in range(5, 1005, 10)])
+    in_seq3 = np.array([x for x in range(10, 1010, 10)])
     out_seq = np.array([in_seq1[i] + in_seq2[i] for i in range(len(in_seq1))])
     # convert to [rows, columns] structure
     in_seq1 = in_seq1.reshape((len(in_seq1), 1))
@@ -80,17 +80,18 @@ def main():
     dataset = np.hstack((in_seq1, in_seq2, in_seq3, out_seq))
     scaler = MinMaxScaler(feature_range=(-1, 1))
     train_data_normalized = scaler.fit_transform(dataset)
+    window = 10
 
-    print(train_data_normalized)
+    print(dataset)
 
-    sliding_window_dataset = SlidingWindow(train_data_normalized, train_seq_len=7)
-    data_loader = DataLoader(sliding_window_dataset)
+    sliding_window_dataset = SlidingWindow(train_data_normalized, train_seq_len=window)
+    data_loader = DataLoader(sliding_window_dataset, batch_size=10)
     model = train(data_loader,
                   input_size=sliding_window_dataset.input_size,
                   num_classes=sliding_window_dataset.num_classes,
                   seq_len=sliding_window_dataset.train_seq_len,
-                  num_epochs=50)
-    input = torch.from_numpy(np.array([train_data_normalized[-7:, :]])).float()
+                  num_epochs=350)
+    input = torch.from_numpy(np.array([train_data_normalized[-window:, :]])).float()
     model.init_hidden(input.size(0))
     prediction = model(input.to("cpu")).detach().numpy()
     print(prediction)

@@ -9,12 +9,10 @@ import torch
 import torch.nn as nn
 from sklearn.preprocessing import MinMaxScaler
 from torch.autograd import Variable
-from fastprogress import progress_bar
 from torch.utils.data import Dataset
 from matplotlib.pyplot import figure
 import warnings
 import time
-from sklearn.metrics import mean_squared_error
 # custom
 from mv_lstm import MV_LSTM
 
