@@ -1,13 +1,46 @@
 rows-1001,rows
 
-dayofwe	quarter	month	year	dayofye	dayofmo	weekofy	lag_7	lag_28	score
-x	x	x			x		x	x	0.058856
-x		x			x			x	0.061584	
-x	x	x			x			x	0.061596
-x	x	x	x	x	x	x	x	x	0.057079 
-x	x	x	x	x	x	x	x	x	0.057162 (+lag_365)
-x	x	x		x	x	x	x	x	0.058822
-x		x	x	x	x	x	x	x	0.057074 (best)
-x		x	x	x	x	x			0.058177
-x		x	x	x	x	x	x	x	0.057247(+lag_14)
-									0.056901(dropped first month due to NaN/0 in lagfeatures)
+dayofwe	quarter	month	year	dayofye	dayofmo	weekofy	lag_7	lag_28	rolmea7	rolmea28score
+x	x	x			x		x	x			0.058856
+x		x			x			x			0.061584	
+x	x	x			x			x			0.061596
+x	x	x	x	x	x	x	x	x			0.057079 
+x	x	x	x	x	x	x	x	x			0.057162 	(+lag_365)
+x	x	x		x	x	x	x	x			0.058822
+x		x	x	x	x	x	x	x			0.057074 
+x		x	x	x	x	x					0.058177
+x		x	x	x	x	x	x	x			0.057247	(+lag_14)
+											0.056901(dropped first month due to NaN/0 in lagfeatures)
+x		x	x	x	x	x	x	x	x		0.057418	
+x		x	x	x	x	x	x	x	x		0.054586	(changed parameters){'n_estimators': 200,"objective": "count:poisson","learning_rate" : 0.075,"max_depth": 6, 'min_child_weight': 50}
+x	x	x	x	x	x	x	x	x	x		0.054585(best)
+x	x	x	x	x	x	x	x	x	x	x	0.054753
+x		x	x	x	x	x	x	x	x	x	0.049323(best) updated rollingmeans/parameters
+
+
+
+Hobbies
+
+dayofwe	quarter	month	year	dayofye	dayofmo	weekofy	lag_7	lag_28	rolmea7	rolmea28score
+x	x	x	x	x	x	x	x	x	x	x	0.038915
+x		x		x	x	x		x		x	0.039702
+x		x	x	x	x	x	x	x	x	x	0.038914 
+x		x	x	x	x	x	x	x	x		0.038865 
+x		x	x	x	x	x	x	x			0.038860 (best)
+x		x	x	x	x	x	x				0.038975
+x		x	x	x	x	x		x			0.038974
+x		x		x	x	x	x	x			0.040329
+x		x	x	x	x		x	x			0.038905
+
+Foods
+dayofwe	quarter	month	year	dayofye	dayofmo	weekofy	lag_7	lag_28	rolmea7	rolmea28score
+x		x	x	x	x	x	x	x			0.051838
+x		x	x	x	x	x	x	x	x		0.051895
+x		x	x	x	x	x	x	x		x	0.051871
+x		x	x	x	x	x	x				0.052036
+x		x	x	x	x	x		x			0.052673
+x	x	x	x	x	x	x	x	x			0.051842
+x	x	x	x	x	x	x	x	x		x	0.049042(not shifted rolmean)
+x		x	x	x	x	x	x	x	x	x	0.0453	(best)(not shifted rollingmean)
+
+
